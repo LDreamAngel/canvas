@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./jquery.min.js"></script>
+    <style>
+        /* html,
+        body,
+        canvas{
+            width: 100%;
+            height: 100%;
+        } */
+        ul li {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        ul li p,
+        ul li input {
+            width: 50px;
+            height: 50px;
+            margin-right: 50px;
+            /* border: solid 1px; */
+        }
+
+        /* .style{
+            background-color: transparent!important;
+        } */
+    </style>
+</head>
+
+<body>
+
+    <ul></ul>
+    <canvas id="myCanvas" height="10000px" width="10000px"></canvas>
+</body>
+<script type="text/javascript">
+
+
+    $(function () {
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        $.getJSON("./image.json", function (res) {
+            console.log(res)
+            let data = res.lesions;
+
+            let arr = arrayUnique2(data, 'label')
+            let str = ''
+            arr.forEach(el => {
+                str += '<li data-checked="true"><input type="checkbox" checked><p style="background-color:rgba(' + el.color.join(',') + ')"></p>' + el.label + '</li>'
+            });
+            $("ul").append(str);
+            canvasFun(data)
+
+            $("ul li").click(function () {
+                console.log($(this).children('input').prop("checked"))
+                if ($(this).children('input').prop("checked")) {
+                    $(this).children('input').prop('checked', false)
+                    // $(this).children('p').addClass('style')
+                    data.forEach(el => {
+                        if (el.label == $(this).text()) {
+                            el.color[3] = 0;
+                        }
+                    });
+                    canvasFun(data)
+                } else {
+                    $(this).children('input').prop('checked', true)
+                    // $(this).children('p').removeClass('style')
+                    data.forEach(el => {
+                        if (el.label == $(this).text()) {
+                            el.color[3] = 0.3;
+                        }
+                    });
+                    canvasFun(data)
+                }
+            })
+            // $("ul li input").click(function () { layerShow(data) })
+
+        })
+
+        // 过滤数组
+        function arrayUnique2(arr, name) {
+            var hash = {};
+            return arr.reduce(function (item, next) {
+                hash[next[name]] ? '' : hash[next[name]] = true && item.push(next);
+                return item;
+            }, []);
+        }
+
+        // 绘制图层
+        function canvasFun(data) {
+            c.height = c.height;
+            for (let i = 0; i < data.length; i++) {
+                // if (i == 0)
+                //     continue
+                ctx.beginPath();
+                for (let j = 0; j < data[i].region.length; j++) {
+                    ctx.lineTo(data[i].region[j][0], data[i].region[j][1]);
+                }
+                var color = 'rgba(' + data[i].color.join(',') + ')'
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+
+        // 分层显示data
+        function layerShow(data) {
+            if ($(this).children('input').prop("checked")) {
+                    $(this).children('input').prop('checked', false)
+                    // $(this).children('p').addClass('style')
+                    data.forEach(el => {
+                        if (el.label == $(this).text()) {
+                            el.color[3] = 0;
+                        }
+                    });
+                    canvasFun(data)
+                } else {
+                    $(this).children('input').prop('checked', true)
+                    // $(this).children('p').removeClass('style')
+                    data.forEach(el => {
+                        if (el.label == $(this).text()) {
+                            el.color[3] = 0.3;
+                        }
+                    });
+                    canvasFun(data)
+                }
+        }
+
+
+    })
+</script>
+
+</html>
